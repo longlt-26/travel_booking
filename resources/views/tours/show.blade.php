@@ -36,17 +36,47 @@
                     <p class="text-sm text-gray-500 mt-2">Số lượng tối đa: {{ $tour->max_people }} người</p>
                 </div>
 
-                <form action="#" method="POST" class="mt-8">
+                <form action="{{ route('bookings.store') }}" method="POST" class="mt-8">
                     @csrf
+                    <input type="hidden" name="tour_id" value="{{ $tour->id }}">
+
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">Số lượng người tham gia</label>
-                        <input type="number" name="quantity" min="1" max="{{ $tour->max_people }}" value="1" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="number" id="quantity" name="quantity" min="1" max="{{ $tour->max_people }}" value="1"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-2">Tối đa: {{ $tour->max_people }} người</p>
+                    </div>
+
+                    <div class="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm text-gray-500">Tổng tiền dự kiến</p>
+                            <p class="text-xl font-bold text-red-500" id="totalAmount">
+                                {{ number_format($tour->price, 0, ',', '.') }} VNĐ
+                            </p>
+                        </div>
                     </div>
 
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-lg shadow-md mt-4">
                         Xác nhận đặt Tour
                     </button>
                 </form>
+
+                <script>
+                    const price = {{ (float) $tour->price }};
+                    const quantityInput = document.getElementById('quantity');
+                    const totalEl = document.getElementById('totalAmount');
+
+                    function formatVnd(n) {
+                        return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' VNĐ';
+                    }
+
+                    function updateTotal() {
+                        const q = parseInt(quantityInput.value || '1', 10);
+                        totalEl.textContent = formatVnd(price * q);
+                    }
+
+                    quantityInput.addEventListener('input', updateTotal);
+                </script>
 
             </div>
         </div>

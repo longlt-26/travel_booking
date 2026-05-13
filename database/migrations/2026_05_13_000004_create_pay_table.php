@@ -6,18 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('bookings', function (Blueprint $table) {
+        Schema::create('pay', function (Blueprint $table) {
             $table->id();
 
-            // user_id is nullable to avoid issues if legacy DB already has bookings without it
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-
-            $table->foreignId('tour_id')->constrained()->onDelete('cascade');
+            // Thông tin đặt tour (tham chiếu sang booking)
+            $table->foreignId('booking_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tour_id')->constrained('tours')->onDelete('cascade');
 
             $table->unsignedInteger('quantity');
             $table->decimal('total_amount', 15, 2);
@@ -25,7 +21,6 @@ return new class extends Migration
             // pending -> paid/failed/cancelled
             $table->string('status')->default('pending');
 
-            // vnpay | momo
             $table->string('payment_provider')->nullable();
             $table->string('payment_reference')->nullable();
             $table->timestamp('paid_at')->nullable();
@@ -34,11 +29,9 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('bookings');
+        Schema::dropIfExists('pay');
     }
 };
+

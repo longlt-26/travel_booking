@@ -6,5 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
-    //
+    protected $fillable = [
+        'user_id',
+        'tour_id',
+        'quantity',
+        'total_amount',
+        'status',
+        'payment_provider',
+        'payment_reference',
+        'paid_at',
+    ];
+
+    protected $casts = [
+        'paid_at' => 'datetime',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function tour()
+    {
+        return $this->belongsTo(Tour::class);
+    }
 }
