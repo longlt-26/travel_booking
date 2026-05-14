@@ -29,8 +29,25 @@ Route::post('/payment/momo/callback', [\App\Http\Controllers\BookingController::
 // 2. DÀNH CHO ADMIN / USER (Bên trong - Bắt buộc đăng nhập)
 // ==========================================================
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    // Tách trang dashboard theo role
+    return auth()->user()->role === 'admin'
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('client.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/client/dashboard', function () {
+        abort_unless(auth()->user()->role === 'user', 403);
+        return view('client.dashboard');
+    })->name('client.dashboard');
+});
+
+
+// ===== Admin routes (role=admin) =====
+Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard'])
+        ->name('admin.dashboard');
+});
 
 Route::middleware('auth')->group(function () {
     // Quản lý Profile mặc định của Breeze
@@ -39,4 +56,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+
 require __DIR__.'/auth.php';
+

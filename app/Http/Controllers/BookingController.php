@@ -20,7 +20,7 @@ class BookingController extends Controller
 
         $tour = Tour::findOrFail($validated['tour_id']);
 
-        if ($validated['quantity'] > $tour->max_people) {
+        if ((int) $validated['quantity'] > (int) $tour->max_people) {
             return back()->withErrors([
                 'quantity' => 'Số lượng vượt quá giới hạn tối đa của tour.',
             ])->withInput();
@@ -29,12 +29,24 @@ class BookingController extends Controller
         $quantity = (int) $validated['quantity'];
         $total = (float) $tour->price * $quantity;
 
-        $booking = Booking::create([
-            'user_id' => $request->user()->id,
-            'tour_id' => $tour->id,
+        // Nếu trước đó đã có pending booking cho đúng user/tour thì dùng lại
+        // để tránh lỗi do booking bị bắn lại/đổi trạng thái giữa chừng.
+        $booking = Booking::firstOrCreate(
+            [
+                'user_id' => $request->user()->id,
+                'tour_id' => $tour->id,
+                'status' => 'pending',
+            ],
+            [
+                'quantity' => $quantity,
+                'total_amount' => $total,
+            ]
+        );
+
+        // Luôn sync lại quantity/total để đúng theo input hiện tại
+        $booking->update([
             'quantity' => $quantity,
             'total_amount' => $total,
-            'status' => 'pending',
         ]);
 
         return redirect()->route('bookings.pay', $booking);
@@ -122,22 +134,29 @@ class BookingController extends Controller
             }
 
             $success = (string) $vnp_ResponseCode === '00';
-            // Coi như thành công nếu ResponseCode=00.
-            // VNPay thật sẽ verify chữ ký ở phần trên (nếu env đầy đủ).
-            if ($success) {
+
+            // Idempotency: callback có thể bị bắn nhiều lần.
+            // Nếu booking đã paid/failed rồi thì chỉ update các trường payment_reference.
+            if (in_array($booking->status, ['paid', 'failed'], true)) {
                 $booking->update([
-                    'status' => 'paid',
                     'payment_provider' => 'vnpay',
-                    'payment_reference' => $input['vnp_TransactionNo'] ?? null,
-                    'paid_at' => Carbon::now(),
+                    'payment_reference' => $input['vnp_TransactionNo'] ?? $booking->payment_reference,
                 ]);
             } else {
-
-                $booking->update([
-                    'status' => 'failed',
-                    'payment_provider' => 'vnpay',
-                    'payment_reference' => $input['vnp_TransactionNo'] ?? null,
-                ]);
+                if ($success) {
+                    $booking->update([
+                        'status' => 'paid',
+                        'payment_provider' => 'vnpay',
+                        'payment_reference' => $input['vnp_TransactionNo'] ?? null,
+                        'paid_at' => Carbon::now(),
+                    ]);
+                } else {
+                    $booking->update([
+                        'status' => 'failed',
+                        'payment_provider' => 'vnpay',
+                        'payment_reference' => $input['vnp_TransactionNo'] ?? null,
+                    ]);
+                }
             }
         } catch (\Throwable $e) {
             Log::error('VNPay callback error: '.$e->getMessage());
@@ -147,8 +166,12 @@ class BookingController extends Controller
             ]);
         }
 
-        // Demo: sau callback, redirect người dùng quay lại trang thanh toán
-        // để họ thấy booking đã đổi status.
+        // Demo: callback có thể bị gọi lại.
+        // Tránh redirect loop: nếu booking đã paid/failed thì đưa về trang tour.
+        if ($booking->status !== 'pending') {
+            return redirect()->route('tours.show', $booking->tour_id);
+        }
+
         return redirect()->route('bookings.pay', $booking->id);
     }
 
@@ -178,19 +201,27 @@ class BookingController extends Controller
             $resultCode = (string) ($input['resultCode'] ?? '');
             $success = $resultCode === '0' || $resultCode === '00';
 
-            if ($success) {
+            // Idempotency: callback có thể bị bắn nhiều lần.
+            if (in_array($booking->status, ['paid', 'failed'], true)) {
                 $booking->update([
-                    'status' => 'paid',
                     'payment_provider' => 'momo',
-                    'payment_reference' => $input['transId'] ?? null,
-                    'paid_at' => Carbon::now(),
+                    'payment_reference' => $input['transId'] ?? $booking->payment_reference,
                 ]);
             } else {
-                $booking->update([
-                    'status' => 'failed',
-                    'payment_provider' => 'momo',
-                    'payment_reference' => $input['transId'] ?? null,
-                ]);
+                if ($success) {
+                    $booking->update([
+                        'status' => 'paid',
+                        'payment_provider' => 'momo',
+                        'payment_reference' => $input['transId'] ?? null,
+                        'paid_at' => Carbon::now(),
+                    ]);
+                } else {
+                    $booking->update([
+                        'status' => 'failed',
+                        'payment_provider' => 'momo',
+                        'payment_reference' => $input['transId'] ?? null,
+                    ]);
+                }
             }
         } catch (\Throwable $e) {
             Log::error('Momo callback error: '.$e->getMessage());
