@@ -28,19 +28,8 @@ Route::post('/payment/momo/callback', [\App\Http\Controllers\BookingController::
 // ==========================================================
 // 2. DÀNH CHO ADMIN / USER (Bên trong - Bắt buộc đăng nhập)
 // ==========================================================
-Route::get('/dashboard', function () {
-    // Tách trang dashboard theo role
-    return auth()->user()->role === 'admin'
-        ? redirect()->route('admin.dashboard')
-        : redirect()->route('client.dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Dashboard cho user đã được xóa theo yêu cầu: chỉ admin mới có trang quản trị.
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/client/dashboard', function () {
-        abort_unless(auth()->user()->role === 'user', 403);
-        return view('client.dashboard');
-    })->name('client.dashboard');
-});
 
 
 // ===== Admin routes (role=admin) =====
@@ -48,6 +37,16 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard'])
         ->name('admin.dashboard');
 });
+
+// Trang sau khi login (Breeze redirect về route('dashboard'))
+Route::middleware(['auth'])->get('/dashboard', function () {
+    $user = auth()->user();
+
+    return $user && $user->role === 'admin'
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('tours.index');
+})->name('dashboard');
+
 
 Route::middleware('auth')->group(function () {
     // Quản lý Profile mặc định của Breeze

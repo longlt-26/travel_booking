@@ -20,7 +20,8 @@ class UserAdminController extends Controller
     {
         $this->authorizeAdmin();
 
-        abort_unless($user->role !== 'admin', 400);
+        abort_unless($user->role !== 'admin', 403);
+
 
         $user->update(['role' => 'admin']);
 
@@ -40,7 +41,8 @@ class UserAdminController extends Controller
 
 
 
-        abort_unless($user->role === 'admin', 400);
+        abort_unless($user->role === 'admin', 403);
+
 
         $user->update(['role' => 'user']);
 
