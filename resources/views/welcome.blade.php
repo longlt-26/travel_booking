@@ -6,12 +6,18 @@
     <title>Booking Travel - Khám phá thế giới</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
         .glass-nav {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
+        }
+        .search-bar-float {
+            transform: translateY(-50%);
+            z-index: 40;
         }
         .hero-gradient {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -37,11 +43,9 @@
                 <h1 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">BookingTravel</h1>
             </div>
             
-            <div class="hidden lg:flex items-center gap-8">
-                <a href="#destinations" class="text-slate-600 font-bold hover:text-blue-600 transition text-sm">Điểm đến</a>
-                <a href="#tours" class="text-slate-600 font-bold hover:text-blue-600 transition text-sm">Danh sách tour</a>
-                <a href="#testimonials" class="text-slate-600 font-bold hover:text-blue-600 transition text-sm">Đánh giá</a>
-            </div>
+                   <!-- Links điều hướng -->
+            <div class="hidden md:flex items-center gap-8">
+   </div>
 
             <div class="flex items-center gap-6">
                 @if (Route::has('login'))
@@ -56,6 +60,7 @@
                                     </div>
                                     <span class="text-slate-700 font-medium text-sm">{{ auth()->user()->name }}</span>
                                 </div>
+                                <a href="{{ route('bookings.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-bold transition">Tour của tôi</a>
                                 <a href="{{ route('profile.edit') }}" class="text-slate-500 hover:text-blue-600 text-sm font-medium transition">Hồ sơ</a>
                             @endif
                             
@@ -172,6 +177,29 @@
         </div>
     </section>
 
+    <!-- Floating Search Bar (Đã kích hoạt) -->
+    <div class="container mx-auto px-6 max-w-5xl relative search-bar-float hidden md:block" data-aos="fade-up" data-aos-delay="200">
+        <form action="{{ route('tours.index') }}" method="GET" class="bg-white p-6 rounded-[2.5rem] shadow-2xl shadow-blue-900/10 border border-blue-50 flex items-center gap-4">
+            <div class="flex-grow flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100 focus-within:border-blue-400 transition">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Bạn muốn đi đâu?" class="bg-transparent border-none focus:outline-none w-full text-sm font-bold text-slate-900 placeholder:text-slate-400">
+            </div>
+            <div class="w-px h-10 bg-slate-200"></div>
+            <div class="flex-grow flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100 focus-within:border-blue-400 transition">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <select name="category" class="bg-transparent border-none focus:outline-none w-full text-sm font-bold text-slate-900 appearance-none cursor-pointer">
+                    <option value="all">Tất cả khu vực</option>
+                    <option value="Bắc" {{ request('category') == 'Bắc' ? 'selected' : '' }}>Miền Bắc</option>
+                    <option value="Trung" {{ request('category') == 'Trung' ? 'selected' : '' }}>Miền Trung</option>
+                    <option value="Nam" {{ request('category') == 'Nam' ? 'selected' : '' }}>Miền Nam</option>
+                </select>
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-blue-200 transition-all active:scale-95 whitespace-nowrap">
+                Tìm kiếm ngay
+            </button>
+        </form>
+    </div>
+
     <script>
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
@@ -198,7 +226,7 @@
     </script>
 
     <!-- Why Choose Us -->
-    <section class="py-24 bg-white">
+    <section class="py-24 bg-white" data-aos="fade-up">
         <div class="container mx-auto px-6 max-w-7xl text-center mb-16">
             <span class="text-blue-600 font-black uppercase tracking-widest text-sm">Ưu thế của chúng tôi</span>
             <h2 class="text-4xl font-black text-slate-900 mt-2">Tại sao nên đặt tour tại BookingTravel?</h2>
@@ -229,7 +257,7 @@
     </section>
 
     <!-- Top Destinations -->
-    <section class="py-24 bg-slate-50">
+    <section id="destinations" class="py-24 bg-slate-50" data-aos="fade-up">
         <div class="container mx-auto px-6 max-w-7xl">
             <div class="flex flex-col md:flex-row justify-between items-end mb-16">
                 <div>
@@ -269,14 +297,30 @@
     </section>
 
     <!-- Tour Listing (Existing) -->
-    <main id="tours" class="container mx-auto px-6 py-24 max-w-7xl">
-        <div class="flex justify-between items-end mb-16">
+    <main id="tours" class="container mx-auto px-6 py-24 max-w-7xl" data-aos="fade-up">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
             <div>
                 <span class="text-blue-600 font-black uppercase tracking-widest text-sm">Lựa chọn của bạn</span>
                 <h2 class="text-4xl font-black text-slate-900 mt-2">Tour Nổi Bật</h2>
             </div>
-            <a href="#" class="text-blue-600 font-bold hover:underline">Xem tất cả tour &rarr;</a>
+            
+            <!-- Category Filter Tabs -->
+            <div class="flex bg-slate-100 p-1.5 rounded-2xl overflow-x-auto no-scrollbar">
+                <a href="{{ route('tours.index', ['category' => 'all']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ !request('category') || request('category') == 'all' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Tất cả</a>
+                <a href="{{ route('tours.index', ['category' => 'Bắc']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'Bắc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Bắc</a>
+                <a href="{{ route('tours.index', ['category' => 'Trung']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'Trung' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Trung</a>
+                <a href="{{ route('tours.index', ['category' => 'Nam']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'Nam' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Nam</a>
+            </div>
         </div>
+
+        @if($tours->isEmpty())
+            <div class="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
+                <div class="text-5xl mb-4">🔍</div>
+                <h3 class="text-xl font-black text-slate-900">Không tìm thấy tour phù hợp</h3>
+                <p class="text-slate-400 mt-2">Bạn hãy thử tìm kiếm với từ khóa khác nhé!</p>
+                <a href="{{ route('tours.index') }}" class="inline-block mt-6 text-blue-600 font-bold hover:underline">Xem lại tất cả tour</a>
+            </div>
+        @endif
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             @foreach($tours as $tour)
@@ -304,6 +348,11 @@
                 </div>
             </div>
             @endforeach
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-20">
+            {{ $tours->links() }}
         </div>
     </main>
 
@@ -333,7 +382,7 @@
     </section>
 
     <!-- Testimonials -->
-    <section class="py-24 bg-white">
+    <section id="testimonials" class="py-24 bg-white" data-aos="fade-up">
         <div class="container mx-auto px-6 max-w-7xl text-center mb-16">
             <span class="text-blue-600 font-black uppercase tracking-widest text-sm">Cảm nhận khách hàng</span>
             <h2 class="text-4xl font-black text-slate-900 mt-2">Khách hàng nói gì về chúng tôi</h2>
@@ -375,8 +424,62 @@
         </div>
     </section>
 
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 bg-slate-50" data-aos="fade-up">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <span class="text-blue-600 font-black uppercase tracking-widest text-sm">Liên hệ</span>
+                    <h2 class="text-4xl font-black text-slate-900 mt-2 mb-6">Bạn có thắc mắc?<br>Đừng ngần ngại liên hệ!</h2>
+                    <p class="text-slate-500 mb-10 leading-relaxed">Đội ngũ của chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7 để đảm bảo bạn có một chuyến đi tuyệt vời nhất.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-blue-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Hotline 24/7</p>
+                                <p class="text-slate-900 font-black">1900 8888</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-blue-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Email hỗ trợ</p>
+                                <p class="text-slate-900 font-black">contact@bookingtravel.vn</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-10 rounded-[3rem] shadow-2xl shadow-blue-900/5 border border-slate-100">
+                    <form id="contact-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Họ và tên</label>
+                                <input type="text" placeholder="Nguyễn Văn A" class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-blue-600/20 transition">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</label>
+                                <input type="email" placeholder="example@gmail.com" class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-blue-600/20 transition">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lời nhắn</label>
+                            <textarea rows="4" placeholder="Bạn cần hỗ trợ gì?" class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-blue-600/20 transition"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-blue-200 active:scale-95">Gửi tin nhắn</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Newsletter -->
-    <section class="container mx-auto px-6 mb-24 max-w-7xl">
+    <section class="container mx-auto px-6 mb-24 max-w-7xl" data-aos="fade-up">
         <div class="bg-slate-900 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden">
             <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full"></div>
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full"></div>
@@ -384,8 +487,8 @@
             <div class="relative z-10 max-w-2xl mx-auto">
                 <h2 class="text-4xl font-black text-white mb-6 leading-tight">Đăng ký nhận tin để không bỏ lỡ ưu đãi!</h2>
                 <p class="text-slate-400 mb-10">Để lại email của bạn, chúng tôi sẽ gửi những mã giảm giá và tour mới nhất định kỳ.</p>
-                <form class="flex flex-col md:flex-row gap-4">
-                    <input type="email" placeholder="Nhập email của bạn..." class="flex-grow bg-white/10 border border-white/20 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-blue-600 transition">
+                <form id="newsletter-form" class="flex flex-col md:flex-row gap-4">
+                    <input type="email" required placeholder="Nhập email của bạn..." class="flex-grow bg-white/10 border border-white/20 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-blue-600 transition">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-10 py-4 rounded-2xl transition-all shadow-lg shadow-blue-900 active:scale-95">Đăng ký ngay</button>
                 </form>
             </div>
@@ -393,6 +496,10 @@
     </section>
 
     <footer class="bg-slate-900 py-16 border-t border-white/5">
+        <!-- Back to Top Button -->
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-2xl flex items-center justify-center hover:bg-blue-700 transition-all z-[60] active:scale-90">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+        </button>
         <div class="container mx-auto px-6 max-w-7xl">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                 <div class="md:col-span-2">
@@ -428,5 +535,43 @@
         </div>
     </footer>
 
+    <!-- AOS & Custom Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+
+        // Newsletter Simulation
+        document.getElementById('newsletter-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Toast.fire({
+                icon: 'success',
+                title: 'Đăng ký nhận tin thành công!'
+            });
+            this.reset();
+        });
+
+        // Contact Form Simulation
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Toast.fire({
+                icon: 'success',
+                title: 'Cảm ơn bạn! Chúng tôi sẽ liên hệ lại sớm.'
+            });
+            this.reset();
+        });
+    </script>
 </body>
 </html>

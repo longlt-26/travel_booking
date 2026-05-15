@@ -16,9 +16,10 @@ Route::get('/', [TourController::class, 'index'])->name('tours.index');
 Route::get('/tour/{id}', [TourController::class, 'show'])->name('tours.show');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/my-bookings', [\App\Http\Controllers\BookingController::class, 'index'])->name('bookings.index');
+    Route::get('/my-bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings', [\App\Http\Controllers\BookingController::class, 'store'])->name('bookings.store');
     Route::match(['get', 'post'], '/bookings/{booking}/pay', [\App\Http\Controllers\BookingController::class, 'pay'])->name('bookings.pay');
-
 });
 
 Route::post('/payment/vnpay/callback', [\App\Http\Controllers\BookingController::class, 'vnpayCallback'])->name('payment.vnpay.callback');

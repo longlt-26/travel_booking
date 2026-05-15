@@ -6,6 +6,8 @@
     <title>{{ $tour->title }} - Chi tiết Tour</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .glass-header {
@@ -126,12 +128,30 @@
                         @csrf
                         <input type="hidden" name="tour_id" value="{{ $tour->id }}">
 
-                        <div class="space-y-3">
-                            <label class="block text-slate-700 font-black text-sm uppercase">Số lượng người tham gia</label>
+                        <div class="space-y-6">
+                            <div class="space-y-3">
+                                <label for="departure_date" class="block text-slate-700 font-black text-sm uppercase">Ngày khởi hành</label>
+                                <div class="relative">
+                                    <input type="date" name="departure_date" id="departure_date" required min="{{ date('Y-m-d') }}"
+                                           class="w-full bg-slate-50 px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-600 focus:outline-none font-bold text-lg transition">
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block text-slate-700 font-black text-sm uppercase">Số lượng người tham gia</label>
+                                <div class="relative">
+                                    <input type="number" id="quantity" name="quantity" min="1" max="{{ $tour->max_people }}" value="1"
+                                           class="w-full bg-slate-50 px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-600 focus:outline-none font-bold text-lg transition">
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">/ {{ $tour->max_people }} tối đa</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="voucher" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã giảm giá (Voucher)</label>
                             <div class="relative">
-                                <input type="number" id="quantity" name="quantity" min="1" max="{{ $tour->max_people }}" value="1"
-                                       class="w-full bg-slate-50 px-6 py-4 rounded-2xl border-2 border-slate-100 focus:border-blue-600 focus:outline-none font-bold text-lg transition">
-                                <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">/ {{ $tour->max_people }} tối đa</div>
+                                <input type="text" name="voucher_code" id="voucher" placeholder="Nhập mã ưu đãi..." class="w-full bg-slate-50 border-2 border-slate-50 rounded-xl px-4 py-3 text-sm focus:border-blue-600 focus:outline-none transition font-bold uppercase placeholder:normal-case">
+                                <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-700 transition uppercase">Áp dụng</button>
                             </div>
                         </div>
 
@@ -176,6 +196,7 @@
         const price = {{ (float) $tour->price }};
         const quantityInput = document.getElementById('quantity');
         const totalEl = document.getElementById('totalAmount');
+        const bookingForm = document.querySelector('form');
 
         function formatVnd(n) {
             return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' đ';
@@ -187,6 +208,39 @@
         }
 
         quantityInput.addEventListener('input', updateTotal);
+
+        // Professional Booking Confirmation
+        bookingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const q = quantityInput.value;
+            const total = formatVnd(price * q);
+
+            Swal.fire({
+                title: 'Xác nhận đặt tour?',
+                html: `Bạn đang đặt tour cho <b>${q} người</b>.<br>Tổng tiền: <b class="text-blue-600">${total}</b>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Đồng ý đặt ngay',
+                cancelButtonText: 'Hủy bỏ',
+                background: '#ffffff',
+                borderRadius: '1.5rem',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Đang xử lý...',
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        bookingForm.submit();
+                    });
+                }
+            });
+        });
     </script>
 
 </body>

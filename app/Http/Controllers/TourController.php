@@ -10,9 +10,27 @@ class TourController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tours = Tour::all();
+        $query = Tour::query();
+
+        // Tìm kiếm theo từ khóa
+        if ($request->has('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Lọc theo danh mục (Giả lập bằng location hoặc type nếu có)
+        if ($request->has('category') && $request->get('category') !== 'all') {
+            $query->where('location', 'like', "%" . $request->get('category') . "%");
+        }
+
+        $tours = $query->latest()->paginate(9);
+
         return view('welcome', compact('tours'));
     }
 

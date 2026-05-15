@@ -11,11 +11,28 @@ use Illuminate\Support\Carbon;
 
 class BookingController extends Controller
 {
+    public function index(Request $request)
+    {
+        $bookings = Booking::where('user_id', $request->user()->id)
+            ->with('tour')
+            ->latest()
+            ->paginate(10);
+
+        return view('bookings.index', compact('bookings'));
+    }
+
+    public function show(Request $request, Booking $booking)
+    {
+        $this->authorizeBooking($request, $booking);
+        return view('bookings.show', compact('booking'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'tour_id' => ['required', 'integer', 'exists:tours,id'],
             'quantity' => ['required', 'integer', 'min:1'],
+            'departure_date' => ['required', 'date', 'after_or_equal:today'],
         ]);
 
         $tour = Tour::findOrFail($validated['tour_id']);
@@ -29,19 +46,14 @@ class BookingController extends Controller
         $quantity = (int) $validated['quantity'];
         $total = (float) $tour->price * $quantity;
 
-        // Nếu trước đó đã có pending booking cho đúng user/tour thì dùng lại
-        // để tránh lỗi do booking bị bắn lại/đổi trạng thái giữa chừng.
-        $booking = Booking::firstOrCreate(
-            [
-                'user_id' => $request->user()->id,
-                'tour_id' => $tour->id,
-                'status' => 'pending',
-            ],
-            [
-                'quantity' => $quantity,
-                'total_amount' => $total,
-            ]
-        );
+        $booking = Booking::create([
+            'user_id' => $request->user()->id,
+            'tour_id' => $tour->id,
+            'departure_date' => $validated['departure_date'],
+            'status' => 'pending',
+            'quantity' => $quantity,
+            'total_amount' => $total,
+        ]);
 
         // Luôn sync lại quantity/total để đúng theo input hiện tại
         $booking->update([
@@ -166,42 +178,32 @@ class BookingController extends Controller
             ]);
         }
 
-        // Demo: callback có thể bị gọi lại.
-        // Tránh redirect loop: nếu booking đã paid/failed thì đưa về trang tour.
-        if ($booking->status !== 'pending') {
-            return redirect()->route('tours.show', $booking->tour_id);
-        }
-
-        return redirect()->route('bookings.pay', $booking->id);
+        // Sau khi xử lý xong, chuyển về trang danh sách đơn hàng của tôi
+        return redirect()->route('bookings.index')->with('success', 'Thanh toán tour thành công! Chúc bạn có một chuyến đi tuyệt vời.');
     }
 
     public function momoCallback(Request $request)
     {
-
         $input = $request->all();
-
         $bookingId = $input['orderInfo'] ?? null;
+        
         if (!$bookingId) {
-            // Momo gửi orderId/extra tuỳ cấu hình; tuỳ bạn map lại
             $bookingId = $input['partnerCode'] ?? null;
         }
 
         if (!$bookingId) {
-            return response()->noContent(200);
+            return redirect()->route('bookings.index')->with('error', 'Không tìm thấy thông tin đơn hàng.');
         }
 
         $booking = Booking::where('id', (int) $bookingId)->first();
         if (!$booking) {
-            return response()->noContent(200);
+            return redirect()->route('bookings.index')->with('error', 'Đơn hàng không tồn tại.');
         }
 
         try {
-            // Momo signature verify (tuỳ bạn cấu hình chính xác).
-            // Nếu không có đủ env, flow vẫn có thể update theo resultCode.
             $resultCode = (string) ($input['resultCode'] ?? '');
             $success = $resultCode === '0' || $resultCode === '00';
 
-            // Idempotency: callback có thể bị bắn nhiều lần.
             if (in_array($booking->status, ['paid', 'failed'], true)) {
                 $booking->update([
                     'payment_provider' => 'momo',
@@ -231,8 +233,8 @@ class BookingController extends Controller
             ]);
         }
 
-        // Demo: sau callback, redirect quay lại trang thanh toán
-        return redirect()->route('bookings.pay', $booking->id);
+        // Chuyển về trang danh sách đơn hàng của tôi
+        return redirect()->route('bookings.index')->with('success', 'Thanh toán tour thành công! Chúc bạn có một chuyến đi tuyệt vời.');
     }
 
     private function authorizeBooking(Request $request, Booking $booking): void

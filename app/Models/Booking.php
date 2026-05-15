@@ -9,6 +9,7 @@ class Booking extends Model
     protected $fillable = [
         'user_id',
         'tour_id',
+        'departure_date',
         'quantity',
         'total_amount',
         'status',
@@ -19,6 +20,7 @@ class Booking extends Model
 
     protected $casts = [
         'paid_at' => 'datetime',
+        'departure_date' => 'date',
     ];
 
     public function user()
