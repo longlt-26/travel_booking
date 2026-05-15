@@ -34,9 +34,14 @@ Route::post('/payment/momo/callback', [\App\Http\Controllers\BookingController::
 
 
 // ===== Admin routes (role=admin) =====
-Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard'])
-        ->name('admin.dashboard');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
+    Route::resource('tours', \App\Http\Controllers\Admin\TourAdminController::class);
+    
+    // Quản lý đơn hàng
+    Route::get('bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings.index');
+    Route::patch('bookings/{booking}/status', [\App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('bookings.updateStatus');
+    Route::delete('bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'destroy'])->name('bookings.destroy');
 });
 
 // Trang sau khi login (Breeze redirect về route('dashboard'))
