@@ -6,6 +6,8 @@
     <title>Tin tức du lịch - BookingTravel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
@@ -72,5 +74,6 @@
             <p class="text-slate-400 text-sm">© 2026 BookingTravel. Tất cả quyền được bảo lưu.</p>
         </div>
     </footer>
+    @include('components.chatbot')
 </body>
 </html>
