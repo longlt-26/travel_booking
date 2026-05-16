@@ -323,16 +323,8 @@
                 borderRadius: '1.5rem',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Đang xử lý...',
-                        didOpen: () => {
-                            Swal.showLoading();
-                        },
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        bookingForm.submit();
-                    });
+                    // Submit directly to bypass the current listener
+                    e.target.submit();
                 }
             });
         });
@@ -363,12 +355,21 @@
                     document.getElementById('discountAmount').innerText = '- ' + new Intl.NumberFormat('vi-VN').format(data.discount_amount) + ' đ';
                     document.getElementById('totalAmount').innerText = new Intl.NumberFormat('vi-VN').format(data.new_total) + ' đ';
                     
-                    Swal.fire({
-                        title: 'Thành công!',
-                        text: data.message,
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+
+                    Toast.fire({
                         icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
+                        title: data.message
                     });
                 } else {
                     Swal.fire('Lỗi', data.message, 'error');

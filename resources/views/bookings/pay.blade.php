@@ -99,12 +99,21 @@
 
             <!-- Right: Unified QR Box -->
             <div class="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-blue-900/5 border border-slate-100 text-center">
-                <h3 class="text-xl font-black mb-8 flex items-center justify-center gap-3 text-slate-900">
-                    <div class="w-2 h-6 bg-blue-600 rounded-full"></div>
-                    Quét mã QR để thanh toán
-                </h3>
+                <div id="payment-content" class="space-y-8">
+                    <h3 class="text-xl font-black flex items-center justify-center gap-3 text-slate-900">
+                        <div class="w-2 h-6 bg-blue-600 rounded-full"></div>
+                        Quét mã QR để thanh toán
+                    </h3>
 
-                <div class="space-y-8">
+                    <!-- Countdown Timer -->
+                    <div class="flex justify-center items-center gap-4 bg-orange-50 p-4 rounded-2xl border border-orange-100">
+                        <div class="text-2xl animate-bounce">⏳</div>
+                        <div class="text-left">
+                            <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest">Thời gian thanh toán còn lại</p>
+                            <p class="text-xl font-black text-orange-600" id="countdown">05:00</p>
+                        </div>
+                    </div>
+
                     <form action="{{ route('payment.momo.callback') }}" method="POST" class="space-y-8">
                         @csrf
                         <input type="hidden" name="orderInfo" value="{{ $booking->id }}">
@@ -114,7 +123,16 @@
                         <div class="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100">
                             <!-- Dynamic QR Code (VietQR) -->
                             <div class="bg-white p-4 rounded-3xl inline-block shadow-sm border border-slate-100 mb-8 group">
-                                <img src="https://img.vietqr.io/image/MB-123456789999-compact2.png?amount={{ $booking->total_amount }}&addInfo=THANHTOAN%20TOUR%20{{ $booking->id }}&accountName=BOOKING%20TRAVEL" 
+                                @php
+                                    $bankId = env('BANK_ID', 'MB');
+                                    $bankAccount = env('BANK_ACCOUNT', '123456789');
+                                    $bankName = rawurlencode(env('BANK_ACCOUNT_NAME', 'BOOKING TRAVEL'));
+                                    $amount = $booking->total_amount;
+                                    $info = rawurlencode("THANHTOAN TOUR " . $booking->id);
+                                    
+                                    $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$bankAccount}-compact2.png?amount={$amount}&addInfo={$info}&accountName={$bankName}";
+                                @endphp
+                                <img src="{{ $qrUrl }}" 
                                      class="w-56 h-56 rounded-2xl transition-transform group-hover:scale-105 duration-500" alt="Mã QR Thanh toán">
                             </div>
 
@@ -126,7 +144,7 @@
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nội dung chuyển khoản:</span>
-                                    <span class="text-slate-900 font-black text-sm">THANHTOAN TOUR {{ $booking->id }}</span>
+                                    <span class="text-slate-900 font-black text-sm uppercase">THANHTOAN TOUR {{ $booking->id }}</span>
                                 </div>
                             </div>
 
@@ -136,15 +154,30 @@
                             </button>
                         </div>
                     </form>
+                </div>
 
-                    <div class="space-y-6">
-                        <p class="text-xs text-slate-400 font-medium">Hỗ trợ thanh toán qua tất cả ứng dụng Ngân hàng và Ví điện tử</p>
-                        <div class="flex justify-center items-center gap-6 opacity-30 grayscale saturate-0">
-                            <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" class="h-6">
-                            <img src="https://vnpay.vn/wp-content/uploads/2020/07/Logo-VNPAYQR-1.png" class="h-4">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" class="h-6">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" class="h-4">
-                        </div>
+                <!-- Expired Message -->
+                <div id="expired-message" class="hidden py-12 text-center">
+                    <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">⚠️</div>
+                    <h3 class="text-2xl font-black text-slate-900 mb-4">Phiên thanh toán hết hạn</h3>
+                    <p class="text-slate-500 mb-8 max-w-xs mx-auto text-sm leading-relaxed">Đơn hàng của bạn vẫn được lưu. Bạn có muốn tạo mã thanh toán mới không?</p>
+                    <div class="flex flex-col gap-3 max-w-xs mx-auto">
+                        <button onclick="window.location.reload()" class="bg-blue-600 text-white font-black px-10 py-4 rounded-2xl shadow-xl shadow-blue-200 hover:bg-blue-700 transition">
+                            Thanh toán lại (Lấy mã mới)
+                        </button>
+                        <a href="{{ route('bookings.index') }}" class="text-slate-400 hover:text-slate-600 font-bold text-sm transition py-2">
+                            Quay lại đơn hàng
+                        </a>
+                    </div>
+                </div>
+
+                <div class="space-y-6 pt-10">
+                    <p class="text-xs text-slate-400 font-medium">Hỗ trợ thanh toán qua tất cả ứng dụng Ngân hàng và Ví điện tử</p>
+                    <div class="flex justify-center items-center gap-6 opacity-30 grayscale saturate-0">
+                        <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" class="h-6">
+                        <img src="https://vnpay.vn/wp-content/uploads/2020/07/Logo-VNPAYQR-1.png" class="h-4">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" class="h-6">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" class="h-4">
                     </div>
                 </div>
             </div>
@@ -155,5 +188,31 @@
         <p class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">© 2026 BookingTravel Platform. All rights reserved.</p>
     </footer>
 
+    <script>
+        // Thời gian hết hạn: 5 phút kể từ lúc mở trang này
+        const startTime = new Date().getTime();
+        const expiryTime = startTime + (5 * 60 * 1000); // + 5 phút
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = expiryTime - now;
+
+            if (distance < 0) {
+                clearInterval(timer);
+                document.getElementById('payment-content').classList.add('hidden');
+                document.getElementById('expired-message').classList.remove('hidden');
+                return;
+            }
+
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown').innerHTML = 
+                (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        }
+
+        const timer = setInterval(updateCountdown, 1000);
+        updateCountdown(); // Run immediately
+    </script>
 </body>
 </html>

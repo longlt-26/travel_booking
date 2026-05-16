@@ -75,7 +75,8 @@
                             <!-- Action -->
                             <div class="flex-shrink-0">
                                 @if($booking->status === 'pending')
-                                    <a href="{{ route('bookings.pay', $booking) }}" class="bg-slate-900 hover:bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm transition-all shadow-xl">
+                                    <a href="{{ route('bookings.pay', $booking) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black text-sm transition-all shadow-xl shadow-blue-200 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                                         Thanh toán ngay
                                     </a>
                                 @else
