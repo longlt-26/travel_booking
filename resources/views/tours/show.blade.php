@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .glass-header {
@@ -111,6 +113,85 @@
                         <p class="font-bold">50 triệu/vụ</p>
                     </div>
                 </section>
+
+                <!-- Reviews Section -->
+                <section class="space-y-8 pb-12">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-black flex items-center gap-3">
+                            <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+                            Đánh giá từ khách hàng ({{ $tour->reviews->where('status', 'approved')->count() }})
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6">
+                        @forelse($tour->reviews->where('status', 'approved') as $review)
+                            <div class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 font-black">
+                                            {{ strtoupper(substr($review->user->name, 0, 1)) }}
+                                        </div>
+                                        <div>
+                                            <p class="font-black text-slate-900 text-sm">{{ $review->user->name }}</p>
+                                            <p class="text-xs text-slate-400">{{ $review->created_at->diffForHumans() }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex text-yellow-400 gap-0.5">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <svg class="w-4 h-4 {{ $i <= $review->rating ? 'fill-current' : 'text-slate-200' }}" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                        @endfor
+                                    </div>
+                                </div>
+                                <p class="text-slate-600 leading-relaxed text-sm italic">"{{ $review->comment }}"</p>
+                            </div>
+                        @empty
+                            <div class="text-center py-12 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                                <p class="text-slate-400 font-medium">Chưa có đánh giá nào cho tour này.</p>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <!-- Review Form -->
+                    @auth
+                        <div class="bg-blue-600 p-10 rounded-[2.5rem] shadow-xl shadow-blue-200 text-white">
+                            <h3 class="text-xl font-black mb-2">Chia sẻ trải nghiệm của bạn</h3>
+                            <p class="text-blue-100 text-sm mb-8 opacity-90">Ý kiến của bạn giúp chúng tôi cải thiện dịch vụ tốt hơn.</p>
+                            
+                            <form id="reviewForm" action="{{ route('reviews.store', $tour) }}" method="POST" class="space-y-6">
+                                @csrf
+                                <div class="space-y-4">
+                                    <label class="block text-xs font-black uppercase tracking-widest text-blue-100">Đánh giá sao</label>
+                                    <div class="flex gap-4" x-data="{ rating: 5 }">
+                                        <template x-for="i in 5">
+                                            <button type="button" @click="rating = i" class="transition-transform active:scale-90">
+                                                <svg class="w-8 h-8 cursor-pointer" :class="i <= rating ? 'text-yellow-400 fill-current' : 'text-blue-400'" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <input type="hidden" name="rating" :value="rating">
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-black uppercase tracking-widest text-blue-100">Bình luận của bạn</label>
+                                    <textarea name="comment" rows="4" required minlength="10" placeholder="Hãy viết cảm nhận của bạn về chuyến đi này..."
+                                              class="w-full bg-white/10 border border-white/20 rounded-2xl px-6 py-4 text-white placeholder:text-blue-200 focus:outline-none focus:border-white transition"></textarea>
+                                </div>
+
+                                <button type="submit" class="bg-white text-blue-600 px-10 py-4 rounded-2xl font-black shadow-xl hover:bg-blue-50 transition-all active:scale-95">
+                                    Gửi đánh giá ngay
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <div class="bg-slate-900 p-10 rounded-[2.5rem] text-center text-white">
+                            <h3 class="text-xl font-black mb-4">Bạn muốn đánh giá tour này?</h3>
+                            <p class="text-slate-400 mb-8">Vui lòng đăng nhập để chia sẻ cảm nhận của bạn.</p>
+                            <a href="{{ route('login') }}" class="inline-block bg-blue-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl hover:bg-blue-700 transition-all">Đăng nhập ngay</a>
+                        </div>
+                    @endauth
+                </section>
             </div>
 
             <!-- Right Side: Booking Card -->
@@ -124,7 +205,7 @@
                         </div>
                     </div>
 
-                    <form action="{{ route('bookings.store') }}" method="POST" class="space-y-6">
+                    <form id="bookingForm" action="{{ route('bookings.store') }}" method="POST" class="space-y-6">
                         @csrf
                         <input type="hidden" name="tour_id" value="{{ $tour->id }}">
 
@@ -196,7 +277,7 @@
         const price = {{ (float) $tour->price }};
         const quantityInput = document.getElementById('quantity');
         const totalEl = document.getElementById('totalAmount');
-        const bookingForm = document.querySelector('form');
+        const bookingForm = document.getElementById('bookingForm');
 
         function formatVnd(n) {
             return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' đ';

@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Swiper.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
         .glass-nav {
@@ -189,9 +191,9 @@
                 <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 <select name="category" class="bg-transparent border-none focus:outline-none w-full text-sm font-bold text-slate-900 appearance-none cursor-pointer">
                     <option value="all">Tất cả khu vực</option>
-                    <option value="Bắc" {{ request('category') == 'Bắc' ? 'selected' : '' }}>Miền Bắc</option>
-                    <option value="Trung" {{ request('category') == 'Trung' ? 'selected' : '' }}>Miền Trung</option>
-                    <option value="Nam" {{ request('category') == 'Nam' ? 'selected' : '' }}>Miền Nam</option>
+                    <option value="north" {{ request('category') == 'north' ? 'selected' : '' }}>Miền Bắc</option>
+                    <option value="central" {{ request('category') == 'central' ? 'selected' : '' }}>Miền Trung</option>
+                    <option value="south" {{ request('category') == 'south' ? 'selected' : '' }}>Miền Nam</option>
                 </select>
             </div>
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-blue-200 transition-all active:scale-95 whitespace-nowrap">
@@ -307,9 +309,9 @@
             <!-- Category Filter Tabs -->
             <div class="flex bg-slate-100 p-1.5 rounded-2xl overflow-x-auto no-scrollbar">
                 <a href="{{ route('tours.index', ['category' => 'all']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ !request('category') || request('category') == 'all' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Tất cả</a>
-                <a href="{{ route('tours.index', ['category' => 'Bắc']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'Bắc' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Bắc</a>
-                <a href="{{ route('tours.index', ['category' => 'Trung']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'Trung' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Trung</a>
-                <a href="{{ route('tours.index', ['category' => 'Nam']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'Nam' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Nam</a>
+                <a href="{{ route('tours.index', ['category' => 'north']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'north' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Bắc</a>
+                <a href="{{ route('tours.index', ['category' => 'central']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'central' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Trung</a>
+                <a href="{{ route('tours.index', ['category' => 'south']) }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition {{ request('category') == 'south' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Miền Nam</a>
             </div>
         </div>
 
@@ -326,7 +328,7 @@
             @foreach($tours as $tour)
             <div class="tour-card bg-white rounded-[2.5rem] shadow-sm overflow-hidden border border-slate-100 flex flex-col">
                 <div class="relative h-72 overflow-hidden">
-                    <img src="https://placehold.co/600x400?text={{ urlencode($tour->title) }}" alt="{{ $tour->title }}" class="w-full h-full object-cover">
+                    <img src="{{ $tour->image ?? 'https://placehold.co/600x400?text='.urlencode($tour->title) }}" alt="{{ $tour->title }}" class="w-full h-full object-cover">
                     <div class="absolute top-6 left-6 bg-white/90 backdrop-blur px-4 py-2 rounded-2xl text-xs font-black text-slate-900 shadow-sm border border-white/20 uppercase tracking-widest">
                         {{ $tour->location }}
                     </div>
@@ -387,39 +389,38 @@
             <span class="text-blue-600 font-black uppercase tracking-widest text-sm">Cảm nhận khách hàng</span>
             <h2 class="text-4xl font-black text-slate-900 mt-2">Khách hàng nói gì về chúng tôi</h2>
         </div>
-        <div class="container mx-auto px-6 max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100">
-                <div class="flex text-yellow-400 mb-6">★★★★★</div>
-                <p class="text-slate-600 italic mb-8 leading-relaxed">"Chuyến đi Hạ Long thật sự tuyệt vời! Mọi thứ đều được sắp xếp chỉn chu, từ khách sạn đến lịch trình tham quan."</p>
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">MT</div>
-                    <div>
-                        <p class="font-black text-slate-900 text-sm">Minh Tuấn</p>
-                        <p class="text-slate-400 text-xs">CEO at TechVina</p>
-                    </div>
+        <!-- Swiper Testimonials -->
+        <div class="container mx-auto px-6 max-w-7xl overflow-hidden py-10">
+            <div class="swiper testimonialSwiper pb-12">
+                <div class="swiper-wrapper">
+                    @forelse($testimonials as $index => $testimonial)
+                        <div class="swiper-slide">
+                            <div class="bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-500 h-full flex flex-col">
+                                <div class="flex text-yellow-400 mb-6 gap-0.5">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <svg class="w-4 h-4 {{ $i <= $testimonial->rating ? 'fill-current' : 'text-slate-200' }}" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                    @endfor
+                                </div>
+                                <p class="text-slate-600 italic mb-8 leading-relaxed line-clamp-4 flex-grow">"{{ $testimonial->comment }}"</p>
+                                <div class="flex items-center gap-4 mt-auto">
+                                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">
+                                        {{ strtoupper(substr($testimonial->user->name, 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-black text-slate-900 text-sm">{{ $testimonial->user->name }}</p>
+                                        <p class="text-slate-400 text-xs">{{ $testimonial->tour->title }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-12 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 w-full">
+                            <p class="text-slate-400 font-medium">Chưa có đánh giá nổi bật nào.</p>
+                        </div>
+                    @endforelse
                 </div>
-            </div>
-            <div class="bg-blue-600 p-10 rounded-[2.5rem] text-white shadow-2xl shadow-blue-200">
-                <div class="flex text-yellow-300 mb-6">★★★★★</div>
-                <p class="text-blue-50 italic mb-8 leading-relaxed">"Tôi đã đặt tour 3 lần tại đây và chưa bao giờ thất vọng. Dịch vụ hỗ trợ khách hàng rất nhiệt tình và tận tâm."</p>
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center font-bold text-white">HA</div>
-                    <div>
-                        <p class="font-black text-white text-sm">Hoàng Anh</p>
-                        <p class="text-blue-200 text-xs">Marketing Manager</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100">
-                <div class="flex text-yellow-400 mb-6">★★★★★</div>
-                <p class="text-slate-600 italic mb-8 leading-relaxed">"Phú Quốc là một thiên đường và BookingTravel đã giúp gia đình tôi có những kỷ niệm khó quên tại đó."</p>
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">LN</div>
-                    <div>
-                        <p class="font-black text-slate-900 text-sm">Lan Ngọc</p>
-                        <p class="text-slate-400 text-xs">Teacher</p>
-                    </div>
-                </div>
+                <!-- Pagination -->
+                <div class="swiper-pagination !-bottom-2"></div>
             </div>
         </div>
     </section>
@@ -514,10 +515,10 @@
                 <div>
                     <h4 class="text-white font-black mb-6">Liên kết</h4>
                     <ul class="space-y-4 text-slate-400 text-sm">
-                        <li><a href="#" class="hover:text-blue-600 transition">Về chúng tôi</a></li>
+                        <li><a href="{{ route('about') }}" class="hover:text-blue-600 transition">Về chúng tôi</a></li>
                         <li><a href="#tours" class="hover:text-blue-600 transition">Danh sách tour</a></li>
-                        <li><a href="#" class="hover:text-blue-600 transition">Điểm đến</a></li>
-                        <li><a href="#" class="hover:text-blue-600 transition">Tin tức</a></li>
+                        <li><a href="#destinations" class="hover:text-blue-600 transition">Điểm đến</a></li>
+                        <li><a href="{{ route('news') }}" class="hover:text-blue-600 transition">Tin tức</a></li>
                     </ul>
                 </div>
                 <div>
@@ -537,6 +538,7 @@
 
     <!-- AOS & Custom Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         AOS.init({
@@ -571,6 +573,34 @@
                 title: 'Cảm ơn bạn! Chúng tôi sẽ liên hệ lại sớm.'
             });
             this.reset();
+        });
+
+        // Swiper Initialization
+        const swiper = new Swiper('.testimonialSwiper', {
+            slidesPerView: 1,
+            spaceBetween: 30,
+            loop: true,
+            centeredSlides: true,
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+                dynamicBullets: true,
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 1,
+                },
+                768: {
+                    slidesPerView: 2,
+                },
+                1024: {
+                    slidesPerView: 3,
+                },
+            }
         });
     </script>
 </body>

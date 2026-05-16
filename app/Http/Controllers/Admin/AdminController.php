@@ -18,7 +18,7 @@ class AdminController extends Controller
         $bookingsCount = Booking::count();
         $paidBookingsCount = Booking::where('status', 'paid')->count();
 
-        $latestBookings = Booking::with('tour')
+        $latestBookings = Booking::with(['tour', 'user'])
             ->latest('id')
             ->take(10)
             ->get();

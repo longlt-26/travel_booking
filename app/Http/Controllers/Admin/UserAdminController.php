@@ -11,50 +11,40 @@ class UserAdminController extends Controller
     public function index()
     {
         $this->authorizeAdmin();
-
-        $users = User::latest()->paginate(10);
+        $users = User::latest()->paginate(20);
         return view('admin.users.index', compact('users'));
     }
 
-    public function makeAdmin(Request $request, User $user)
+    public function updateRole(Request $request, User $user)
     {
         $this->authorizeAdmin();
-
-        abort_unless($user->role !== 'admin', 403);
-
-
-        $user->update(['role' => 'admin']);
-
-        return redirect()->route('admin.users.index')->with('success', 'Đã cấp quyền admin');
-    }
-
-    public function removeAdmin(Request $request, User $user)
-    {
-        $this->authorizeAdmin();
-
-        // Không cho gỡ quyền admin của chính admin đăng nhập (tránh khóa hệ thống)
-        $currentUser = auth()->user();
-        if ($user->id === $currentUser?->id) {
-            return back()->with('success', 'Không thể gỡ quyền admin của chính bạn');
+        
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->with('error', 'Bạn không thể tự thay đổi quyền của chính mình');
         }
 
+        $validated = $request->validate([
+            'role' => 'required|in:admin,user',
+        ]);
 
+        $user->update($validated);
+        return redirect()->back()->with('success', 'Cập nhật quyền hạn thành công');
+    }
 
+    public function destroy(User $user)
+    {
+        $this->authorizeAdmin();
 
-        abort_unless($user->role === 'admin', 403);
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->with('error', 'Bạn không thể tự xóa chính mình');
+        }
 
-
-        $user->update(['role' => 'user']);
-
-        return redirect()->route('admin.users.index')->with('success', 'Đã gỡ quyền admin');
+        $user->delete();
+        return redirect()->back()->with('success', 'Xóa người dùng thành công');
     }
 
     private function authorizeAdmin(): void
     {
-        $user = auth()->user();
-        abort_unless($user && $user->role === 'admin', 403);
+        abort_unless(auth()->check() && auth()->user()?->role === 'admin', 403);
     }
 }
-
-
-

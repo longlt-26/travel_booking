@@ -37,6 +37,7 @@ class TourAdminController extends Controller
             'max_people' => ['required', 'integer', 'min:1'],
             'location' => ['required', 'string', 'max:255'],
             'image' => ['nullable', 'string'],
+            'region' => ['required', 'string', 'in:north,central,south'],
         ]);
 
         $tour = Tour::create($validated);
@@ -64,6 +65,7 @@ class TourAdminController extends Controller
             'max_people' => ['required', 'integer', 'min:1'],
             'location' => ['required', 'string', 'max:255'],
             'image' => ['nullable', 'string'],
+            'region' => ['required', 'string', 'in:north,central,south'],
         ]);
 
         $tour->update($validated);

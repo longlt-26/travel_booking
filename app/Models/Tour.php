@@ -14,12 +14,18 @@ class Tour extends Model
         'price', 
         'max_people', 
         'location', 
-        'image'
+        'image',
+        'region'
     ];
 
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 
     public function bookings()

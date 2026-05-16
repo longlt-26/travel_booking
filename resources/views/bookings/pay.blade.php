@@ -50,7 +50,7 @@
                         <div class="space-y-4 pt-6 border-t border-slate-50">
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 font-medium">Ngày khởi hành</span>
-                                <span class="text-slate-900 font-black">{{ $booking->departure_date->format('d/m/Y') }}</span>
+                                <span class="text-slate-900 font-black">{{ $booking->departure_date ? $booking->departure_date->format('d/m/Y') : 'Chưa xác định' }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 font-medium">Số lượng người</span>

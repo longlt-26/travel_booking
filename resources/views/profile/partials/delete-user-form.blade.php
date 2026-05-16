@@ -1,54 +1,42 @@
 <section class="space-y-6">
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Delete Account') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
+        <p class="text-sm font-bold text-slate-500 leading-relaxed">
+            {{ __('Một khi tài khoản của bạn bị xóa, tất cả tài nguyên và dữ liệu của nó sẽ bị xóa vĩnh viễn. Trước khi xóa tài khoản, vui lòng tải xuống bất kỳ dữ liệu hoặc thông tin nào mà bạn muốn giữ lại.') }}
         </p>
     </header>
 
-    <x-danger-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Delete Account') }}</x-danger-button>
+    <button type="button" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+        class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-8 py-3 rounded-xl font-black text-xs transition-all shadow-sm">
+        {{ __('Xóa tài khoản vĩnh viễn') }}
+    </button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+        <form method="post" action="{{ route('profile.destroy') }}" class="p-8">
             @csrf
             @method('delete')
 
-            <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Are you sure you want to delete your account?') }}
+            <h2 class="text-xl font-black text-slate-900 mb-4">
+                {{ __('Bạn có chắc chắn muốn xóa tài khoản?') }}
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+            <p class="text-sm font-bold text-slate-500 mb-8 leading-relaxed">
+                {{ __('Xác nhận xóa tài khoản của bạn bằng cách nhập mật khẩu. Hành động này không thể hoàn tác.') }}
             </p>
 
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
-
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
-
+            <div class="space-y-2">
+                <label for="password" class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ __('Mật khẩu') }}</label>
+                <input id="password" name="password" type="password" class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-600/20 transition-all placeholder-slate-300" placeholder="{{ __('••••••••') }}" />
                 <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
             </div>
 
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Cancel') }}
-                </x-secondary-button>
+            <div class="mt-8 flex justify-end gap-3">
+                <button type="button" x-on:click="$dispatch('close')" class="px-8 py-3 rounded-xl font-black text-slate-400 hover:bg-slate-50 transition-all text-xs">
+                    {{ __('Hủy bỏ') }}
+                </button>
 
-                <x-danger-button class="ms-3">
-                    {{ __('Delete Account') }}
-                </x-danger-button>
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-black text-xs transition-all shadow-xl shadow-red-200">
+                    {{ __('Xác nhận xóa') }}
+                </button>
             </div>
         </form>
     </x-modal>

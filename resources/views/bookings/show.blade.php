@@ -76,7 +76,7 @@
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-8 bg-slate-50 p-8 rounded-3xl">
                                 <div>
                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ngày khởi hành</span>
-                                    <p class="text-xl font-black text-slate-900">{{ $booking->departure_date->format('d/m/Y') }}</p>
+                                    <p class="text-xl font-black text-slate-900">{{ $booking->departure_date ? $booking->departure_date->format('d/m/Y') : 'Chưa xác định' }}</p>
                                 </div>
                                 <div>
                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Số khách</span>

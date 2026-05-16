@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tour;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
 class TourController extends Controller
@@ -24,14 +25,22 @@ class TourController extends Controller
             });
         }
 
-        // Lọc theo danh mục (Giả lập bằng location hoặc type nếu có)
+        // Lọc theo khu vực (Miền)
         if ($request->has('category') && $request->get('category') !== 'all') {
-            $query->where('location', 'like', "%" . $request->get('category') . "%");
+            $query->where('region', $request->get('category'));
         }
 
         $tours = $query->latest()->paginate(9);
 
-        return view('welcome', compact('tours'));
+        // Lấy 10 đánh giá tiêu biểu (từ 4 sao trở lên) để làm slider
+        $testimonials = Review::with(['user', 'tour'])
+            ->where('status', 'approved')
+            ->where('rating', '>=', 4)
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('welcome', compact('tours', 'testimonials'));
     }
 
     /**

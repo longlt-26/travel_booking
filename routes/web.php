@@ -15,11 +15,16 @@ Route::get('/', [TourController::class, 'index'])->name('tours.index');
 // Trang xem chi tiết 1 tour
 Route::get('/tour/{id}', [TourController::class, 'show'])->name('tours.show');
 
+// Các trang tĩnh mới
+Route::view('/about', 'about')->name('about');
+Route::view('/news', 'news')->name('news');
+
 Route::middleware('auth')->group(function () {
     Route::get('/my-bookings', [\App\Http\Controllers\BookingController::class, 'index'])->name('bookings.index');
     Route::get('/my-bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings', [\App\Http\Controllers\BookingController::class, 'store'])->name('bookings.store');
     Route::match(['get', 'post'], '/bookings/{booking}/pay', [\App\Http\Controllers\BookingController::class, 'pay'])->name('bookings.pay');
+    Route::post('/tour/{tour}/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
 });
 
 Route::post('/payment/vnpay/callback', [\App\Http\Controllers\BookingController::class, 'vnpayCallback'])->name('payment.vnpay.callback');
@@ -37,11 +42,22 @@ Route::post('/payment/momo/callback', [\App\Http\Controllers\BookingController::
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
     Route::resource('tours', \App\Http\Controllers\Admin\TourAdminController::class);
+    Route::resource('categories', \App\Http\Controllers\Admin\CategoryAdminController::class);
+    Route::resource('users', \App\Http\Controllers\Admin\UserAdminController::class)->only(['index', 'destroy']);
+    Route::patch('users/{user}/role', [\App\Http\Controllers\Admin\UserAdminController::class, 'updateRole'])->name('users.updateRole');
     
     // Quản lý đơn hàng
     Route::get('bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings.index');
     Route::patch('bookings/{booking}/status', [\App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('bookings.updateStatus');
     Route::delete('bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'destroy'])->name('bookings.destroy');
+
+    // Quản lý tin tức
+    Route::resource('news', \App\Http\Controllers\Admin\NewsAdminController::class);
+
+    // Quản lý bình luận
+    Route::get('reviews', [\App\Http\Controllers\Admin\ReviewAdminController::class, 'index'])->name('reviews.index');
+    Route::patch('reviews/{review}/status', [\App\Http\Controllers\Admin\ReviewAdminController::class, 'updateStatus'])->name('reviews.updateStatus');
+    Route::delete('reviews/{review}', [\App\Http\Controllers\Admin\ReviewAdminController::class, 'destroy'])->name('reviews.destroy');
 });
 
 // Trang sau khi login (Breeze redirect về route('dashboard'))

@@ -34,10 +34,18 @@
                                     </div>
                                 </td>
                                 <td class="py-6">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 12m0 0l4.243-4.243m-4.243 4.243L9.172 7.757m4.243 4.243l-4.243 4.243m4.243-4.243H3"></path></svg>
-                                        {{ $tour->location }}
-                                    </span>
+                                    <div class="flex flex-col gap-2">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest w-fit">
+                                            @if($tour->region === 'north') Miền Bắc
+                                            @elseif($tour->region === 'central') Miền Trung
+                                            @elseif($tour->region === 'south') Miền Nam
+                                            @else Chưa chọn @endif
+                                        </span>
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold w-fit">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 12m0 0l4.243-4.243m-4.243 4.243L9.172 7.757m4.243 4.243l-4.243 4.243m4.243-4.243H3"></path></svg>
+                                            {{ $tour->location }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="py-6">
                                     <div class="font-black text-slate-900">{{ number_format($tour->price, 0, ',', '.') }} đ</div>

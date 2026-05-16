@@ -36,43 +36,55 @@
                 <svg class="w-5 h-5 {{ request()->routeIs('admin.tours.*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 7m0 10V7m0 0L9 4"></path></svg>
                 Quản lý Tour
             </a>
+            <a href="{{ route('admin.categories.index') }}" class="flex items-center gap-4 px-6 py-4 {{ request()->routeIs('admin.categories.*') ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }} rounded-[1.5rem] font-bold transition-all group">
+                <svg class="w-5 h-5 {{ request()->routeIs('admin.categories.*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                Quản lý Danh mục
+            </a>
             <a href="{{ route('admin.bookings.index') }}" class="flex items-center gap-4 px-6 py-4 {{ request()->routeIs('admin.bookings.*') ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }} rounded-[1.5rem] font-bold transition-all group">
                 <svg class="w-5 h-5 {{ request()->routeIs('admin.bookings.*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 Quản lý Đơn hàng
             </a>
+            <a href="{{ route('admin.reviews.index') }}" class="flex items-center gap-4 px-6 py-4 {{ request()->routeIs('admin.reviews.*') ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }} rounded-[1.5rem] font-bold transition-all group">
+                <svg class="w-5 h-5 {{ request()->routeIs('admin.reviews.*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                Quản lý Bình luận
+            </a>
+            <a href="{{ route('admin.news.index') }}" class="flex items-center gap-4 px-6 py-4 {{ request()->routeIs('admin.news.*') ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }} rounded-[1.5rem] font-bold transition-all group">
+                <svg class="w-5 h-5 {{ request()->routeIs('admin.news.*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                Quản lý Tin tức
+            </a>
+            <a href="{{ route('admin.users.index') }}" class="flex items-center gap-4 px-6 py-4 {{ request()->routeIs('admin.users.*') ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }} rounded-[1.5rem] font-bold transition-all group">
+                <svg class="w-5 h-5 {{ request()->routeIs('admin.users.*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-200' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                Quản lý Người dùng
+            </a>
         </nav>
 
-        <div class="p-8 border-t border-slate-800">
-             <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="flex items-center gap-4 text-slate-500 hover:text-red-400 font-bold transition-all w-full group">
-                    <svg class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    Đăng xuất
-                </button>
-            </form>
-        </div>
     </aside>
 
     <!-- Main Content -->
     <main class="flex-grow flex flex-col h-screen overflow-y-auto">
         <!-- Topbar -->
-        <header class="bg-white/80 backdrop-blur-md h-24 border-b border-slate-200 flex items-center justify-between px-10 sticky top-0 z-50">
-            <div>
-                <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">{{ $title ?? 'Dashboard' }}</h2>
-                <div class="text-slate-900 font-black text-xl mt-0.5">Chào mừng trở lại, {{ auth()->user()->name }}!</div>
+        <header class="bg-white/80 backdrop-blur-md h-24 border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-50">
+            <div class="py-2">
+                <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-2">{{ $title ?? 'Dashboard' }}</h2>
+                <div class="text-slate-900 font-black text-xl tracking-tight">Trang quản trị</div>
             </div>
             
-            <div class="flex items-center gap-6">
-                <a href="{{ route('tours.index') }}" target="_blank" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-600 transition shadow-lg shadow-slate-200">Xem Website</a>
-                
-                <div class="flex items-center gap-4 border-l border-slate-100 pl-6">
-                    <div class="text-right">
-                        <p class="text-sm font-black text-slate-900">{{ auth()->user()->name }}</p>
-                        <p class="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em]">Administrator</p>
+            <div class="flex items-center gap-8">
+                <!-- User Profile Section (Matching Screenshot) -->
+                <div class="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+                    <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-black text-sm">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
-                    <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-200">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                    </div>
+                    <span class="text-slate-700 font-bold text-sm">{{ auth()->user()->name }}</span>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="text-red-500 hover:text-red-700 font-bold text-sm transition">
+                            Đăng xuất
+                        </button>
+                    </form>
                 </div>
             </div>
         </header>
