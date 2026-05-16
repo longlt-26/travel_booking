@@ -33,6 +33,7 @@ class BookingController extends Controller
             'tour_id' => ['required', 'integer', 'exists:tours,id'],
             'quantity' => ['required', 'integer', 'min:1'],
             'departure_date' => ['required', 'date', 'after_or_equal:today'],
+            'voucher_code' => ['nullable', 'string', 'exists:vouchers,code'],
         ]);
 
         $tour = Tour::findOrFail($validated['tour_id']);
@@ -45,6 +46,21 @@ class BookingController extends Controller
 
         $quantity = (int) $validated['quantity'];
         $total = (float) $tour->price * $quantity;
+        $discount = 0;
+        $voucherCode = null;
+
+        if ($request->filled('voucher_code')) {
+            $voucher = \App\Models\Voucher::where('code', $request->voucher_code)->first();
+            if ($voucher && $voucher->isValid($total)) {
+                $discount = ($total * $voucher->discount_percent) / 100;
+                $total = $total - $discount;
+                $voucherCode = $voucher->code;
+            } else {
+                return back()->withErrors([
+                    'voucher_code' => 'Mã khuyến mãi không hợp lệ hoặc không đủ điều kiện áp dụng.',
+                ])->withInput();
+            }
+        }
 
         $booking = Booking::create([
             'user_id' => $request->user()->id,
@@ -53,6 +69,8 @@ class BookingController extends Controller
             'status' => 'pending',
             'quantity' => $quantity,
             'total_amount' => $total,
+            'voucher_code' => $voucherCode,
+            'discount_amount' => $discount,
         ]);
 
         // Luôn sync lại quantity/total để đúng theo input hiện tại

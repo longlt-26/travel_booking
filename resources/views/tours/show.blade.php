@@ -231,19 +231,29 @@
                         <div class="space-y-2">
                             <label for="voucher" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã giảm giá (Voucher)</label>
                             <div class="relative">
-                                <input type="text" name="voucher_code" id="voucher" placeholder="Nhập mã ưu đãi..." class="w-full bg-slate-50 border-2 border-slate-50 rounded-xl px-4 py-3 text-sm focus:border-blue-600 focus:outline-none transition font-bold uppercase placeholder:normal-case">
-                                <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-700 transition uppercase">Áp dụng</button>
+                                <input type="text" name="voucher_code" id="voucherCode" placeholder="Nhập mã ưu đãi..." class="w-full bg-slate-50 border-2 border-slate-50 rounded-xl px-4 py-3 text-sm focus:border-blue-600 focus:outline-none transition font-bold uppercase placeholder:normal-case">
+                                <button type="button" id="applyVoucherBtn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-700 transition uppercase">Áp dụng</button>
                             </div>
                         </div>
 
                         <div class="p-6 bg-blue-50 rounded-3xl border border-blue-100 space-y-2">
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-500 font-medium">Tổng số tiền:</span>
+                                <span class="text-slate-500 font-medium">Tạm tính:</span>
+                                <span class="text-lg font-bold text-slate-900" id="subtotalAmount">
+                                    {{ number_format($tour->price, 0, ',', '.') }} đ
+                                </span>
+                            </div>
+                            <div id="discountRow" class="flex justify-between items-center hidden">
+                                <span class="text-slate-500 font-medium">Giảm giá:</span>
+                                <span class="text-lg font-bold text-green-600" id="discountAmount">- 0 đ</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-blue-200">
+                                <span class="text-slate-900 font-black">Tổng cộng:</span>
                                 <span class="text-2xl font-black text-blue-600" id="totalAmount">
                                     {{ number_format($tour->price, 0, ',', '.') }} đ
                                 </span>
                             </div>
-                            <p class="text-[10px] text-blue-400 uppercase font-bold text-center tracking-widest">Đã bao gồm thuế và phí dịch vụ</p>
+                            <p class="text-[10px] text-blue-400 uppercase font-bold text-center tracking-widest mt-2">Đã bao gồm thuế và phí dịch vụ</p>
                         </div>
 
                         <button type="submit" class="w-full bg-slate-900 hover:bg-blue-600 text-white font-black py-5 px-6 rounded-2xl transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center justify-center gap-3">
@@ -284,8 +294,12 @@
         }
 
         function updateTotal() {
+            resetVoucher();
+            document.getElementById('voucherCode').value = '';
             const q = parseInt(quantityInput.value || '1', 10);
-            totalEl.textContent = formatVnd(price * q);
+            const subtotal = price * q;
+            document.getElementById('subtotalAmount').innerText = formatVnd(subtotal);
+            document.getElementById('totalAmount').innerText = formatVnd(subtotal);
         }
 
         quantityInput.addEventListener('input', updateTotal);
@@ -294,11 +308,11 @@
         bookingForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const q = quantityInput.value;
-            const total = formatVnd(price * q);
+            const finalTotal = document.getElementById('totalAmount').innerText;
 
             Swal.fire({
                 title: 'Xác nhận đặt tour?',
-                html: `Bạn đang đặt tour cho <b>${q} người</b>.<br>Tổng tiền: <b class="text-blue-600">${total}</b>`,
+                html: `Bạn đang đặt tour cho <b>${q} người</b>.<br>Tổng tiền: <b class="text-blue-600">${finalTotal}</b>`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
@@ -322,6 +336,58 @@
                 }
             });
         });
+
+        // Voucher Logic
+        document.getElementById('applyVoucherBtn').addEventListener('click', function() {
+            const code = document.getElementById('voucherCode').value;
+            const quantity = document.querySelector('input[name="quantity"]').value;
+            const subtotal = {{ $tour->price }} * quantity;
+
+            if (!code) {
+                Swal.fire('Lỗi', 'Vui lòng nhập mã giảm giá', 'error');
+                return;
+            }
+
+            fetch('{{ route('vouchers.check') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ code: code, total: subtotal })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('discountRow').classList.remove('hidden');
+                    document.getElementById('discountAmount').innerText = '- ' + new Intl.NumberFormat('vi-VN').format(data.discount_amount) + ' đ';
+                    document.getElementById('totalAmount').innerText = new Intl.NumberFormat('vi-VN').format(data.new_total) + ' đ';
+                    
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Lỗi', data.message, 'error');
+                    resetVoucher();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Lỗi', 'Có lỗi xảy ra khi kiểm tra mã giảm giá', 'error');
+            });
+        });
+
+        function resetVoucher() {
+            document.getElementById('discountRow').classList.add('hidden');
+            const quantity = document.querySelector('input[name="quantity"]').value;
+            const subtotal = {{ $tour->price }} * quantity;
+            document.getElementById('totalAmount').innerText = new Intl.NumberFormat('vi-VN').format(subtotal) + ' đ';
+        }
+
     </script>
 
     @include('components.chatbot')

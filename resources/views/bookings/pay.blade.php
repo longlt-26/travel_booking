@@ -60,6 +60,26 @@
                                 <span class="text-slate-500 font-medium">Đơn giá</span>
                                 <span class="text-slate-900 font-bold">{{ number_format($booking->tour->price, 0, ',', '.') }} đ</span>
                             </div>
+
+                            <div class="flex justify-between text-sm pt-4 border-t border-slate-50">
+                                <span class="text-slate-500 font-medium">Tạm tính</span>
+                                <span class="text-slate-900 font-black">{{ number_format($booking->tour->price * $booking->quantity, 0, ',', '.') }} đ</span>
+                            </div>
+
+                            @if($booking->voucher_code)
+                                @php
+                                    $subtotal = $booking->tour->price * $booking->quantity;
+                                    $percent = round(($booking->discount_amount / $subtotal) * 100);
+                                @endphp
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-500 font-medium">Khuyến mãi ({{ $booking->voucher_code }})</span>
+                                    <span class="text-blue-600 font-bold">{{ $percent }}%</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-500 font-medium">Giảm giá</span>
+                                    <span class="text-green-600 font-black">- {{ number_format($booking->discount_amount, 0, ',', '.') }} đ</span>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="bg-slate-900 rounded-3xl p-6 flex justify-between items-center mt-6">

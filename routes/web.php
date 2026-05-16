@@ -54,11 +54,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Quản lý tin tức
     Route::resource('news', \App\Http\Controllers\Admin\NewsAdminController::class);
 
+    // Quản lý khuyến mãi
+    Route::resource('vouchers', \App\Http\Controllers\Admin\VoucherAdminController::class);
+
     // Quản lý bình luận
     Route::get('reviews', [\App\Http\Controllers\Admin\ReviewAdminController::class, 'index'])->name('reviews.index');
     Route::patch('reviews/{review}/status', [\App\Http\Controllers\Admin\ReviewAdminController::class, 'updateStatus'])->name('reviews.updateStatus');
     Route::delete('reviews/{review}', [\App\Http\Controllers\Admin\ReviewAdminController::class, 'destroy'])->name('reviews.destroy');
 });
+
+// Check voucher (Public API)
+Route::post('/vouchers/check', [App\Http\Controllers\Admin\VoucherAdminController::class, 'check'])->name('vouchers.check');
 
 // Trang sau khi login (Breeze redirect về route('dashboard'))
 Route::middleware(['auth'])->get('/dashboard', function () {

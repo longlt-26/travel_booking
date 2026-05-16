@@ -16,6 +16,8 @@ class Booking extends Model
         'payment_provider',
         'payment_reference',
         'paid_at',
+        'voucher_code',
+        'discount_amount',
     ];
 
     protected $casts = [

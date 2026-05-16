@@ -85,6 +85,9 @@
                                 <div class="md:text-right">
                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tổng thanh toán</span>
                                     <p class="text-xl font-black text-blue-600">{{ number_format($booking->total_amount, 0, ',', '.') }} đ</p>
+                                    @if($booking->voucher_code)
+                                        <p class="text-[10px] text-green-600 font-bold mt-1 uppercase tracking-widest">Đã giảm {{ number_format($booking->discount_amount, 0, ',', '.') }} đ ({{ $booking->voucher_code }})</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
