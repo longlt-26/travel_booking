@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $tour->title }} - Chi tiết Tour</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -192,6 +193,45 @@
                         </div>
                     @endauth
                 </section>
+                
+                <!-- Recommendation Engine Section -->
+                @if(isset($recommendedTours) && $recommendedTours->count() > 0)
+                <section class="space-y-8 pb-12 pt-12 border-t border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-blue-600 font-black uppercase tracking-widest text-xs">Gợi ý từ AI</span>
+                            <h2 class="text-2xl font-black flex items-center gap-3 mt-1">
+                                <div class="w-2 h-8 bg-purple-600 rounded-full"></div>
+                                Các tour tương tự bạn có thể thích
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($recommendedTours as $recTour)
+                        <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100 flex flex-col group hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                            <div class="relative h-48 overflow-hidden">
+                                <img src="{{ $recTour->image ?? 'https://placehold.co/600x400?text='.urlencode($recTour->title) }}" alt="{{ $recTour->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-black text-slate-900 shadow-sm border border-white/20 uppercase tracking-widest">
+                                    {{ $recTour->location }}
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 flex flex-col flex-grow">
+                                <h3 class="text-lg font-black text-slate-900 mb-2 group-hover:text-blue-600 transition leading-tight line-clamp-2">{{ $recTour->title }}</h3>
+                                
+                                <div class="mt-auto pt-4 border-t border-slate-50 flex justify-between items-center">
+                                    <span class="text-xl font-black text-blue-600">{{ number_format($recTour->price, 0, ',', '.') }} <small class="text-xs font-bold">đ</small></span>
+                                    <a href="/tour/{{ $recTour->id }}" class="bg-slate-50 hover:bg-blue-600 hover:text-white text-slate-600 p-2.5 rounded-xl transition-all shadow-sm active:scale-95">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </section>
+                @endif
             </div>
 
             <!-- Right Side: Booking Card -->
@@ -200,9 +240,15 @@
                     <div class="mb-8">
                         <p class="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">Giá mỗi khách</p>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-4xl font-black text-blue-600">{{ number_format($tour->price, 0, ',', '.') }}</span>
+                            <span class="text-4xl font-black text-blue-600">{{ number_format($tour->dynamic_price, 0, ',', '.') }}</span>
                             <span class="text-slate-400 font-bold uppercase text-sm">đ</span>
                         </div>
+                        @if($tour->dynamic_price !== $tour->price)
+                            <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-purple-100">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                Giá tối ưu thông minh (AI)
+                            </div>
+                        @endif
                     </div>
 
                     <form id="bookingForm" action="{{ route('bookings.store') }}" method="POST" class="space-y-6">
@@ -240,7 +286,7 @@
                             <div class="flex justify-between items-center">
                                 <span class="text-slate-500 font-medium">Tạm tính:</span>
                                 <span class="text-lg font-bold text-slate-900" id="subtotalAmount">
-                                    {{ number_format($tour->price, 0, ',', '.') }} đ
+                                    {{ number_format($tour->dynamic_price, 0, ',', '.') }} đ
                                 </span>
                             </div>
                             <div id="discountRow" class="flex justify-between items-center hidden">
@@ -250,7 +296,7 @@
                             <div class="flex justify-between items-center pt-2 border-t border-blue-200">
                                 <span class="text-slate-900 font-black">Tổng cộng:</span>
                                 <span class="text-2xl font-black text-blue-600" id="totalAmount">
-                                    {{ number_format($tour->price, 0, ',', '.') }} đ
+                                    {{ number_format($tour->dynamic_price, 0, ',', '.') }} đ
                                 </span>
                             </div>
                             <p class="text-[10px] text-blue-400 uppercase font-bold text-center tracking-widest mt-2">Đã bao gồm thuế và phí dịch vụ</p>
@@ -284,7 +330,7 @@
     </footer>
 
     <script>
-        const price = {{ (float) $tour->price }};
+        const price = {{ (float) $tour->dynamic_price }};
         const quantityInput = document.getElementById('quantity');
         const totalEl = document.getElementById('totalAmount');
         const bookingForm = document.getElementById('bookingForm');
@@ -333,7 +379,7 @@
         document.getElementById('applyVoucherBtn').addEventListener('click', function() {
             const code = document.getElementById('voucherCode').value;
             const quantity = document.querySelector('input[name="quantity"]').value;
-            const subtotal = {{ $tour->price }} * quantity;
+            const subtotal = {{ $tour->dynamic_price }} * quantity;
 
             if (!code) {
                 Swal.fire('Lỗi', 'Vui lòng nhập mã giảm giá', 'error');
@@ -385,7 +431,7 @@
         function resetVoucher() {
             document.getElementById('discountRow').classList.add('hidden');
             const quantity = document.querySelector('input[name="quantity"]').value;
-            const subtotal = {{ $tour->price }} * quantity;
+            const subtotal = {{ $tour->dynamic_price }} * quantity;
             document.getElementById('totalAmount').innerText = new Intl.NumberFormat('vi-VN').format(subtotal) + ' đ';
         }
 

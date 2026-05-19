@@ -64,11 +64,23 @@ class TourController extends Controller
      */
     public function show($id)
     {
-        // Tìm tour có ID tương ứng, nếu không thấy sẽ báo lỗi 40   4
+        // Tìm tour có ID tương ứng, nếu không thấy sẽ báo lỗi 404
         $tour = Tour::findOrFail($id); 
         
+        // --- 2. Hệ thống Gợi ý (Recommendation Engine) ---
+        // Lấy các tour có cùng khu vực (region) hoặc mức giá tương đương, trừ tour hiện tại.
+        // Đây là thuật toán Content-Based Filtering cơ bản.
+        $recommendedTours = Tour::where('id', '!=', $tour->id)
+            ->where(function ($query) use ($tour) {
+                $query->where('region', $tour->region)
+                      ->orWhereBetween('price', [$tour->price * 0.8, $tour->price * 1.2]);
+            })
+            ->inRandomOrder()
+            ->take(3)
+            ->get();
+
         // Truyền dữ liệu sang file giao diện tours/show.blade.php
-        return view('tours.show', compact('tour'));
+        return view('tours.show', compact('tour', 'recommendedTours'));
     }
 
     /**

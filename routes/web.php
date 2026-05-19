@@ -15,6 +15,9 @@ Route::get('/', [TourController::class, 'index'])->name('tours.index');
 // Trang xem chi tiết 1 tour
 Route::get('/tour/{id}', [TourController::class, 'show'])->name('tours.show');
 
+// AI Chatbot
+Route::post('/chat', [\App\Http\Controllers\ChatController::class, 'chat'])->name('chat.send');
+
 // Các trang tĩnh mới
 Route::view('/about', 'about')->name('about');
 Route::view('/news', 'news')->name('news');

@@ -1,5 +1,40 @@
 <!-- Chatbot Trigger Button -->
-<div x-data="{ open: false, messages: [{ role: 'bot', text: 'Xin chào! Tôi là trợ lý ảo của BookingTravel. Tôi có thể giúp gì cho bạn?' }] }" class="fixed bottom-8 right-8 z-[999]">
+<div id="chatbot-container" x-data="{ 
+    open: false, 
+    inputMessage: '',
+    messages: [{ role: 'bot', text: 'Xin chào! Tôi là trợ lý ảo của BookingTravel. Tôi có thể giúp gì cho bạn?' }],
+    sendMessage(text = null) {
+        let msg = typeof text === 'string' ? text.trim() : this.inputMessage.trim();
+        if (!msg) return;
+
+        this.messages.push({ role: 'user', text: msg });
+        if (typeof text !== 'string') this.inputMessage = '';
+        
+        this.$nextTick(() => { document.getElementById('chat-content').scrollTop = document.getElementById('chat-content').scrollHeight });
+
+        this.messages.push({ role: 'bot', text: '...', isTyping: true });
+        this.$nextTick(() => { document.getElementById('chat-content').scrollTop = document.getElementById('chat-content').scrollHeight });
+
+        fetch('/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content')
+            },
+            body: JSON.stringify({ message: msg })
+        })
+        .then(res => res.json())
+        .then(data => {
+            this.messages.pop();
+            this.messages.push({ role: 'bot', text: data.reply });
+            this.$nextTick(() => { document.getElementById('chat-content').scrollTop = document.getElementById('chat-content').scrollHeight });
+        })
+        .catch(err => {
+            this.messages.pop();
+            this.messages.push({ role: 'bot', text: 'Xin lỗi, hệ thống AI đang bận.' });
+        });
+    }
+}" class="fixed bottom-8 right-8 z-[999]">
     
     <!-- Chat Window -->
     <div x-show="open" 
@@ -47,14 +82,7 @@
                 {q: 'Có tour miền Bắc không?', r: 'Dạ có ạ! Bên mình có các tour Hà Giang, Sa Pa, Hạ Long, Tà Xùa đang rất hot. Bạn muốn xem danh sách không ạ?'},
                 {q: 'Tư vấn trực tiếp', r: 'Vâng ạ! Bạn vui lòng để lại Số điện thoại hoặc gọi hotline 1900 8888 để nhân viên bên mình gọi lại tư vấn kỹ hơn nhé!'}
             ]">
-                <button @click="
-                    messages.push({ role: 'user', text: q.q });
-                    $nextTick(() => { document.getElementById('chat-content').scrollTop = document.getElementById('chat-content').scrollHeight });
-                    setTimeout(() => {
-                        messages.push({ role: 'bot', text: q.r });
-                        $nextTick(() => { document.getElementById('chat-content').scrollTop = document.getElementById('chat-content').scrollHeight });
-                    }, 800);
-                " class="text-[10px] font-black uppercase tracking-wider bg-slate-50 hover:bg-blue-50 hover:text-blue-600 border border-slate-100 rounded-lg px-3 py-2 transition-all">
+                <button @click="sendMessage(q.q)" class="text-[10px] font-black uppercase tracking-wider bg-slate-50 hover:bg-blue-50 hover:text-blue-600 border border-slate-100 rounded-lg px-3 py-2 transition-all">
                     <span x-text="q.q"></span>
                 </button>
             </template>
@@ -64,33 +92,16 @@
         <div class="p-4 bg-white border-t border-slate-100">
             <div class="relative">
                 <input type="text" 
-                       x-ref="userInput"
-                       @keydown.enter="
-                            const text = $refs.userInput.value.trim();
-                            if(text) {
-                                messages.push({ role: 'user', text: text });
-                                $refs.userInput.value = '';
-                                $nextTick(() => { document.getElementById('chat-content').scrollTop = document.getElementById('chat-content').scrollHeight });
-                                
-                                // Simple Bot Logic
-                                setTimeout(() => {
-                                    let reply = 'Cảm ơn bạn đã quan tâm! Bạn có thể để lại số điện thoại để nhân viên hỗ trợ trực tiếp được không?';
-                                    if(text.toLowerCase().includes('giá')) reply = 'Giá tour bên mình dao động từ 1.000.000đ đến 5.000.000đ tùy dịch vụ. Bạn quan tâm tour nào ạ?';
-                                    if(text.toLowerCase().includes('đặt')) reply = 'Bạn có thể đặt tour trực tiếp bằng nút Đặt ngay trong chi tiết mỗi tour nhé!';
-                                    if(text.toLowerCase().includes('xin chào') || text.toLowerCase().includes('hi')) reply = 'Chào bạn! BookingTravel có thể giúp gì cho bạn hôm nay?';
-                                    
-                                    messages.push({ role: 'bot', text: reply });
-                                    $nextTick(() => { document.getElementById('chat-content').scrollTop = document.getElementById('chat-content').scrollHeight });
-                                }, 1000);
-                            }
-                       "
+                       x-model="inputMessage"
+                       @keydown.enter="sendMessage()"
                        placeholder="Nhập tin nhắn..." 
                        class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none transition font-medium">
-                <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-700 transition">
+                <button @click="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-700 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </button>
             </div>
         </div>
+        
     </div>
 
     <!-- Toggle Button -->

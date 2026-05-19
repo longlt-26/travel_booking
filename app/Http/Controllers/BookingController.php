@@ -45,7 +45,8 @@ class BookingController extends Controller
         }
 
         $quantity = (int) $validated['quantity'];
-        $total = (float) $tour->price * $quantity;
+        // Sử dụng AI/Dynamic Price thay vì giá gốc
+        $total = (float) $tour->dynamic_price * $quantity;
         $discount = 0;
         $voucherCode = null;
 
