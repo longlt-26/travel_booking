@@ -237,7 +237,7 @@ class BookingController extends Controller
                         'paid_at' => Carbon::now(),
                     ]);
                 } else {
-                    $booking->update([
+                    $booking->update([ 
                         'status' => 'failed',
                         'payment_provider' => 'momo',
                         'payment_reference' => $input['transId'] ?? null,
