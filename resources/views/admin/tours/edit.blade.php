@@ -2,7 +2,7 @@
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
             <div class="p-10">
-                <form method="POST" action="{{ route('admin.tours.update', $tour) }}" class="space-y-8">
+                <form method="POST" action="{{ route('admin.tours.update', $tour) }}" class="space-y-8" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -76,16 +76,30 @@
                             @error('description')<p class="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{{ $message }}</p>@enderror
                         </div>
 
-                        <!-- Image URL -->
+                        <!-- Image Upload -->
                         <div class="md:col-span-2 space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ảnh đại diện (URL)</label>
-                            <div class="flex gap-4 items-center">
-                                <div class="w-20 h-20 bg-slate-100 rounded-2xl overflow-hidden flex-shrink-0 border border-slate-200">
-                                    <img id="imagePreview" src="{{ $tour->image ?? 'https://placehold.co/100x100?text=No+Image' }}" class="w-full h-full object-cover">
-                                </div>
-                                <input type="text" name="image" value="{{ old('image', $tour->image) }}" onchange="document.getElementById('imagePreview').src = this.value"
-                                    class="flex-grow bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-600/20 transition-all placeholder-slate-300"
-                                    placeholder="https://images.unsplash.com/...">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ảnh đại diện</label>
+                            <div class="relative group">
+                                <input type="file" name="image" accept="image/*" class="hidden" id="imageInput">
+                                <label for="imageInput" class="flex items-center gap-6 w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 cursor-pointer hover:border-blue-600 transition-all overflow-hidden relative">
+                                    <div class="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200 flex items-center justify-center">
+                                        @if($tour->image)
+                                            <img id="imagePreview" src="{{ $tour->image }}" class="w-full h-full object-cover">
+                                        @else
+                                            <svg id="placeholderIcon" class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                            <img id="imagePreview" class="w-full h-full object-cover hidden">
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-500 group-hover:text-blue-600 transition">
+                                            {{ $tour->image ? 'Nhấn để thay đổi ảnh' : 'Nhấn để tải ảnh lên' }}
+                                        </p>
+                                        <p class="text-xs text-slate-400 mt-1">PNG, JPG hoặc GIF (Tối đa 2MB)</p>
+                                        @if($tour->image)
+                                            <p class="text-xs text-slate-300 mt-1 truncate max-w-xs">{{ basename($tour->image) }}</p>
+                                        @endif
+                                    </div>
+                                </label>
                             </div>
                             @error('image')<p class="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase">{{ $message }}</p>@enderror
                         </div>
@@ -103,4 +117,21 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = event.target.result;
+                    preview.classList.remove('hidden');
+                    const icon = document.getElementById('placeholderIcon');
+                    if (icon) icon.classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </x-admin-layout>

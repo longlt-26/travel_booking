@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Tour;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TourAdminController extends Controller
 {
@@ -36,11 +37,17 @@ class TourAdminController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'max_people' => ['required', 'integer', 'min:1'],
             'location' => ['required', 'string', 'max:255'],
-            'image' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'region' => ['required', 'string', 'in:north,central,south'],
         ]);
 
-        $tour = Tour::create($validated);
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('tours', 'public');
+        } else {
+            unset($validated['image']);
+        }
+
+        Tour::create($validated);
 
         return redirect()->route('admin.tours.index')->with('success', 'Tạo tour thành công');
     }
@@ -64,9 +71,19 @@ class TourAdminController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'max_people' => ['required', 'integer', 'min:1'],
             'location' => ['required', 'string', 'max:255'],
-            'image' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'region' => ['required', 'string', 'in:north,central,south'],
         ]);
+
+        if ($request->hasFile('image')) {
+            // Xóa ảnh cũ nếu có
+            if ($tour->image && Storage::disk('public')->exists($tour->image)) {
+                Storage::disk('public')->delete($tour->image);
+            }
+            $validated['image'] = $request->file('image')->store('tours', 'public');
+        } else {
+            unset($validated['image']);
+        }
 
         $tour->update($validated);
 
